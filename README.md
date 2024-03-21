@@ -26,5 +26,5 @@ Para criar novas migrations é necessário adicionar uma entidade e rodas o coma
 
 ### Avisos
 
--> Escrever codigo basico em ingles e usar português para nomear tabelas
--> Não esqueça de colocar as variaveis de ambiente
+- Escrever codigo basico em ingles e usar português para nomear tabelas
+- Não esqueça de colocar as variaveis de ambiente
