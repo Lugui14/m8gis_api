@@ -1,8 +1,29 @@
-from flask import Blueprint, jsonify
-from entities.empresa import Empresa
+from flask import Blueprint, jsonify, request
+from services.empresa_service import EmpresaService
 
-empresa = Blueprint('empresa', __name__, url_prefix='/empresa')
+empresa_blueprint = Blueprint('empresa', __name__, url_prefix='/empresa')
+service = EmpresaService()
 
-@empresa.route('/', methods=['GET'])
+@empresa_blueprint.route('/', methods=['GET'])
 def get():
-  return jsonify(Empresa.query.all())
+  page = request.args.get('page', 1)
+  return jsonify(service.get_all(page))
+
+@empresa_blueprint.route('/<int:id>', methods=['GET'])
+def get_by_id(id):
+  return jsonify(service.get_by_id(id))
+
+@empresa_blueprint.route('/', methods=['POST'])
+def create():
+  data = request.json
+  return jsonify(service.create(data))
+
+@empresa_blueprint.route('/', methods=['PUT'])
+def update():
+  data = request.json
+  return jsonify(service.update(data))
+
+@empresa_blueprint.route('/<int:id>', methods=['DELETE'])
+def delete(id):
+  return jsonify(service.delete(id))
+  
