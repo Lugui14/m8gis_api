@@ -3,7 +3,7 @@ from extensions import db
 class Endereco(db.Model):
     __tablename__ = 'endereco'
     id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.Integer, nullable=False)
+    numero = db.Column(db.String(20), nullable=False)
     logradouro = db.Column(db.String(150), nullable=False)
     cep = db.Column(db.BigInteger, nullable=False)
     bairro = db.Column(db.String(50), nullable=False)
