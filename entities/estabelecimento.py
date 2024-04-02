@@ -7,6 +7,7 @@ class Estabelecimento(db.Model):
     cnpj_ordem = db.Column(db.String(4), nullable=False)
     identificador_matriz_filial = db.Column(db.Integer, nullable=False)
     nome_fantasia = db.Column(db.String(100), nullable=False)
+    situacao_cadastral = db.Column(db.Integer, nullable=False)
     data_inicio_atividade = db.Column(db.Date, nullable=False)
     empresa_id = db.Column(db.Integer, db.ForeignKey('empresa.id'), nullable=False)
     endereco_id = db.Column(db.Integer, db.ForeignKey('endereco.id'), nullable=True)
