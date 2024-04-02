@@ -8,4 +8,6 @@ class Empresa(db.Model):
     razao_social = db.Column(db.String(100), nullable=False)
     capital_social = db.Column(db.Numeric, nullable=False)
     natureza_juridica_id = db.Column(db.Integer, db.ForeignKey('natureza_juridica.id'), nullable=False)
+    cnae_principal_id = db.Column(db.Integer, db.ForeignKey('cnae.id'), nullable=False)
     natureza_juridica = db.relationship('NaturezaJuridica', backref='empresas')
+    cnae = db.relationship('Cnae', backref='empresas')
