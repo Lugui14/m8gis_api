@@ -5,7 +5,7 @@ class Empresa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cnpj_basico = db.Column(db.String(8), nullable=False)
     porte = db.Column(db.Integer, nullable=False)
-    razao_social = db.Column(db.String(100), nullable=False)
+    razao_social = db.Column(db.String(250), nullable=False)
     capital_social = db.Column(db.Numeric, nullable=False)
     natureza_juridica_id = db.Column(db.Integer, db.ForeignKey('natureza_juridica.id'), nullable=False)
     cnae_principal_id = db.Column(db.Integer, db.ForeignKey('cnae.id'), nullable=False)
