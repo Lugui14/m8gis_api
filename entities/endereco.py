@@ -6,7 +6,7 @@ class Endereco(db.Model):
     numero = db.Column(db.String(20), nullable=False)
     logradouro = db.Column(db.String(150), nullable=False)
     cep = db.Column(db.BigInteger, nullable=False)
-    bairro = db.Column(db.String(50), nullable=False)
+    bairro = db.Column(db.String(50), nullable=True)
     tipo_logradouro = db.Column(db.String(50))
     municipio_id = db.Column(db.Integer, db.ForeignKey('municipio.id'), nullable=False)
 
