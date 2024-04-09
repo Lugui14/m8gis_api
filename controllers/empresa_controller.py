@@ -6,8 +6,13 @@ service = EmpresaService()
 
 @empresa_blueprint.route('/', methods=['GET'])
 def get():
-  page = request.args.get('page', 1)
-  return jsonify(service.get_all(page))
+  cnae_id = request.args.get('cnae', default=None, type=int)
+  if cnae_id is not None:
+      empresas = service.get_by_cnae(cnae_id)
+      return jsonify(empresas)
+  else:
+    page = request.args.get('page', 1, type=int)
+    return jsonify(service.get_all(page))
 
 @empresa_blueprint.route('/<int:id>', methods=['GET'])
 def get_by_id(id):
@@ -26,4 +31,3 @@ def update():
 @empresa_blueprint.route('/<int:id>', methods=['DELETE'])
 def delete(id):
   return jsonify(service.delete(id))
-  

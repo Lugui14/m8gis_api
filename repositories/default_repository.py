@@ -9,7 +9,7 @@ class DefaultRepository():
     self.entity = entity
   
   def get_all(self, page: int):
-    return self.entity.query.limit(10).offset(page * 10).all()
+    return self.entity.query.limit(100).offset(page * 10).all()
   
   def get_by_id(self, id: int):
     return self.entity.query.get(id)
