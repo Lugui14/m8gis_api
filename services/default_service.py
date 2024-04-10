@@ -16,7 +16,7 @@ class DefaultService():
     return entities
   
   def get_by_id(self, id: int):
-    return self.repository.get_by_id(id)
+    return self._serialize(self.repository.get_by_id(id))
   
   def create(self, entity):
     self.before_create(entity)
