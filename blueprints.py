@@ -1,6 +1,8 @@
 from controllers.empresa_controller import empresa_blueprint
+from controllers.cnae_controller import cnae_blueprint
 
 def register_blueprints(app):
   app.register_blueprint(empresa_blueprint)
+  app.register_blueprint(cnae_blueprint)
 
   return app
