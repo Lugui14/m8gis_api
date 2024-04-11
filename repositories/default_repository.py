@@ -8,7 +8,7 @@ class DefaultRepository():
   def __init__(self, entity: T) -> None:
     self.entity = entity
   
-  def get_all(self, page: int, per_page: int):
+  def get_all(self, page: int = 0, per_page: int = 20):
     return self.entity.query.limit(per_page).offset(page * per_page).all()
   
   def get_by_id(self, id: int):
