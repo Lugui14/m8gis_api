@@ -31,6 +31,7 @@ class EstabelecimentoService(DefaultService):
       'data_inicio_atividade': estabelecimento.data_inicio_atividade,
       'empresa_id': estabelecimento.empresa_id,
       'endereco_id': estabelecimento.endereco_id,
+      'endereco_completo': {"cidade":estabelecimento.endereco.municipio.descricao ,"logradouro": estabelecimento.endereco.logradouro, "numero":estabelecimento.endereco.numero, "bairro":estabelecimento.endereco.bairro },
       'situacao_cadastral': estabelecimento.situacao_cadastral,      
       # Inclua outros campos conforme necessário
     }
