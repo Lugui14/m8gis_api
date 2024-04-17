@@ -17,6 +17,10 @@ class EmpresaService(DefaultService):
   def get_by_cnae(self, cnae: int) -> List[Dict]:
     empresas = self.repository.get_by_cnae(cnae)
     return [self._serialize(empresa) for empresa in empresas]
+  
+  def get_filtered(self, filters: Dict) -> List[Dict]:
+    empresas = self.repository.get_filtered(filters)
+    return [self._serialize(empresa) for empresa in empresas]
 
   def _serialize(self, empresa) -> Dict:
     # Esta função assume que sua entidade `Empresa` é um modelo SQLAlchemy
@@ -30,6 +34,6 @@ class EmpresaService(DefaultService):
       'natureza_juridica_id': empresa.natureza_juridica_id,
       'capital_social': empresa.capital_social,
       'cnae_principal_id': empresa.cnae_principal_id,
-      'cnae_descricao': empresa.cnae.descricao if empresa.cnae else None
+      'cnae_descricao': empresa.cnae.descricao if empresa.cnae else None,
       # Inclua outros campos conforme necessário
     }
