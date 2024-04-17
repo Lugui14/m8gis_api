@@ -13,7 +13,7 @@ def create_app():
     app.secret_key = config.SECRET
     app.config.from_object(config)
     app.config.from_pyfile('config.py')
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/m8gis"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     config.APP = app
