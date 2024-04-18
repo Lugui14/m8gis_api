@@ -6,10 +6,19 @@ service = EmpresaService()
 
 @empresa_blueprint.route('/', methods=['GET'])
 def get():
-  cnae_id = request.args.get('cnae', default=None, type=int)
-  if cnae_id is not None:
-      empresas = service.get_by_cnae(cnae_id)
-      return jsonify(empresas)
+  filters = {
+    'cnae': request.args.get('cnae'),
+    'porte': request.args.get('porte'),
+    'razao_social': request.args.get('razao_social'),
+    'capital_social_min': request.args.get('capital_social_min', type=float),
+    'natureza_juridica': request.args.get('natureza_juridica'),
+    # Adicione mais parâmetros de filtro conforme necessário
+  }
+  filters = {k: v for k, v in filters.items() if v is not None}
+
+  if filters is not None:
+    empresas = service.get_filtered(filters)
+    return jsonify(empresas)
   else:
     page = request.args.get('page', 1, type=int)
     return jsonify(service.get_all(page))
