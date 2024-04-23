@@ -6,9 +6,24 @@ service = EstabelecimentoService()
 
 @estabelecimento_blueprint.route('/', methods=['GET'])
 def get():
-  cnpj_id = request.args.get('cnpj', default=None, type=int)
-  if cnpj_id is not None:
-      estabelecimentos = service.get_by_cnpj(cnpj_id)
+  filters = {
+    'cnae': request.args.get('cnae'),
+    'porte': request.args.get('porte'),
+    'razao_social': request.args.get('razao_social'),
+    'capital_social_min': request.args.get('capital_social_min', type=float),
+    'natju': request.args.get('natju'),
+    'logradouro': request.args.get('logradouro'),
+    'numero': request.args.get('numero'),
+    'cidade': request.args.get('cidade'),
+    'situacao': request.args.get('situacao'),
+    'matriz' : request.args.get('matriz'),
+    'data_abertura': request.args.get('data_abertura'),
+    'cnpj': request.args.get('cnpj'),
+  }
+  filters = {k: v for k, v in filters.items() if v is not None}
+
+  if filters:
+      estabelecimentos = service.get_filtered(filters)
       return jsonify(estabelecimentos)
   else:
     page = request.args.get('page', 1, type=int)

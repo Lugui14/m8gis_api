@@ -17,12 +17,16 @@ class EstabelecimentoService(DefaultService):
   def get_by_cnpj(self, cnpj: int) -> List[Dict]:
     estabelecimentos = self.repository.get_by_cnae(cnpj)
     return [self._serialize(estabelecimento) for estabelecimento in estabelecimentos]
+  
+  def get_filtered(self, filters: Dict) -> List[Dict]:
+    estabelecimentos = self.repository.get_filtered(filters)
+    return [self._serialize(estabelecimento, True) for estabelecimento in estabelecimentos]
 
-  def _serialize(self, estabelecimento) -> Dict:
+  def _serialize(self, estabelecimento, include_address: bool = False) -> Dict:
     # Esta função assume que sua entidade `Estabelecimento` é um modelo SQLAlchemy
     # e converte para um dicionário. Você pode precisar ajustar isso
     # para se adequar à estrutura exata de sua entidade `Estabelecimento`.
-    return {
+    serialized_data = {
     	'id': estabelecimento.id,
       'cnpj_basico': estabelecimento.cnpj_basico,
       'cnpj_ordem': estabelecimento.cnpj_ordem,
@@ -30,8 +34,13 @@ class EstabelecimentoService(DefaultService):
       'nome_fantasia': estabelecimento.nome_fantasia,
       'data_inicio_atividade': estabelecimento.data_inicio_atividade,
       'empresa_id': estabelecimento.empresa_id,
-      'endereco_id': estabelecimento.endereco_id,
-      'endereco_completo': {"cidade":estabelecimento.endereco.municipio.descricao ,"logradouro": estabelecimento.endereco.logradouro, "numero":estabelecimento.endereco.numero, "bairro":estabelecimento.endereco.bairro },
-      'situacao_cadastral': estabelecimento.situacao_cadastral,      
-      # Inclua outros campos conforme necessário
+      'endereco_id': estabelecimento.endereco_id
     }
+    if include_address:
+      serialized_data['endereco'] = {
+        'cidade': estabelecimento.endereco.municipio.descricao,
+        'logradouro': estabelecimento.endereco.logradouro, 
+        'numero': estabelecimento.endereco.numero, 
+        'bairro': estabelecimento.endereco.bairro
+      }
+    return serialized_data
