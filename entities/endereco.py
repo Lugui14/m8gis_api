@@ -8,6 +8,8 @@ class Endereco(db.Model):
     cep = db.Column(db.BigInteger, nullable=False)
     bairro = db.Column(db.String(50), nullable=True)
     tipo_logradouro = db.Column(db.String(50))
+    latitude = db.Column(db.Numeric, nullable=True)
+    longitude = db.Column(db.Numeric, nullable=True)
     municipio_id = db.Column(db.Integer, db.ForeignKey('municipio.id'), nullable=False)
 
 class Municipio(db.Model):

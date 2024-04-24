@@ -9,8 +9,6 @@ class Estabelecimento(db.Model):
     nome_fantasia = db.Column(db.String(100), nullable=True)
     situacao_cadastral = db.Column(db.Integer, nullable=False)
     data_inicio_atividade = db.Column(db.Date, nullable=False)
-    latitude = db.Column(db.Numeric, nullable=True)
-    longitude = db.Column(db.Numeric, nullable=True)
     empresa_id = db.Column(db.Integer, db.ForeignKey('empresa.id'), nullable=False)
     endereco_id = db.Column(db.Integer, db.ForeignKey('endereco.id'), nullable=True)
     empresa = db.relationship('Empresa', backref='estabelecimentos')
