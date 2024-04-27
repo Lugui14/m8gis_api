@@ -7,6 +7,7 @@ service = EstabelecimentoService()
 @estabelecimento_blueprint.route('/', methods=['GET'])
 def get():
   filters = {
+    'id':request.args.get('id', type=int),
     'cnae': request.args.get('cnae'),
     'porte': request.args.get('porte'),
     'razao_social': request.args.get('razao_social'),
@@ -28,10 +29,20 @@ def get():
   else:
     page = request.args.get('page', 1, type=int)
     return jsonify(service.get_all(page))
-
+  
 @estabelecimento_blueprint.route('/<int:id>', methods=['GET'])
-def get_by_id(id):
-  return jsonify(service.get_by_id(id))
+def get_estab_details(id):
+    service = EstabelecimentoService()
+    estabelecimento_data = service.get_estab_by_id_with_empresa(id)
+    
+    if estabelecimento_data:
+        return jsonify(estabelecimento_data), 200
+    else:
+        return jsonify({'message': 'Estabelecimento não encontrado'}), 404
+
+# @estabelecimento_blueprint.route('/<int:id>', methods=['GET'])
+# def get_by_id(id):
+#   return jsonify(service.get_by_id(id))
 
 @estabelecimento_blueprint.route('/', methods=['POST'])
 def create():
