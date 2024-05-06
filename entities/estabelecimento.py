@@ -5,6 +5,7 @@ class Estabelecimento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cnpj_basico = db.Column(db.String(8), nullable=False)
     cnpj_ordem = db.Column(db.String(4), nullable=False)
+    cnpj_dv = db.Column(db.String(2), nullable=False)
     identificador_matriz_filial = db.Column(db.Integer, nullable=False)
     nome_fantasia = db.Column(db.String(100), nullable=True)
     situacao_cadastral = db.Column(db.Integer, nullable=False)

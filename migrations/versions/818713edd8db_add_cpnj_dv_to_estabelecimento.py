@@ -1,8 +1,8 @@
-"""fix: add cnpj_dv to estabelecimento
+"""add cpnj_dv to estabelecimento
 
-Revision ID: 0086a13aea4e
-Revises: 2f050edf2ba3
-Create Date: 2024-04-24 18:49:19.072899
+Revision ID: 818713edd8db
+Revises: 8616a08795bd
+Create Date: 2024-04-30 16:52:09.972479
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0086a13aea4e'
-down_revision = '2f050edf2ba3'
+revision = '818713edd8db'
+down_revision = '8616a08795bd'
 branch_labels = None
 depends_on = None
 
