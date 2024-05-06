@@ -16,7 +16,8 @@ class EstabelecimentoRepository(DefaultRepository):
 
   def get_filtered(self, filters):
     query = Estabelecimento.query.join(Endereco).join(Municipio).join(Empresa)
-    
+    if 'id' in filters:
+      query = query.filter(Estabelecimento.id == filters['id'])
     if 'cnae' in filters:
       query = query.join(Cnae).filter(Cnae.id == filters['cnae'])
     if 'situacao' in filters:
@@ -45,7 +46,25 @@ class EstabelecimentoRepository(DefaultRepository):
     print(query.count())
 
     return query.all()
-
+  
+  def get_estab_by_id_with_empresa(id):
+      estabelecimento = Estabelecimento.query \
+            .join(Estabelecimento.empresa) \
+            .join(Empresa.natureza_juridica) \
+            .join(Empresa.cnae) \
+            .add_columns(
+                Estabelecimento.nome_fantasia,
+                Estabelecimento.data_inicio_atividade,
+                Empresa.razao_social,
+                Empresa.capital_social,
+                Empresa.natureza_juridica.label('natureza_juridica_descricao'),  # Assume que NaturezaJuridica tem um campo 'descricao'
+                Empresa.cnae.label('cnae_descricao')
+                # ... outros campos que você deseja retornar
+            ) \
+            .filter(Estabelecimento.id == id) \
+            .first()
+        
+      return estabelecimento
   def get_by_cnpj(self, cnpj: int, ):
     return self.entity.query \
                       .filter(Estabelecimento.id == cnpj) \

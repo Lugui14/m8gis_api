@@ -35,5 +35,7 @@ class EmpresaService(DefaultService):
       'capital_social': empresa.capital_social,
       'cnae_principal_id': empresa.cnae_principal_id,
       'cnae_descricao': empresa.cnae.descricao if empresa.cnae else None,
+      
+      
       # Inclua outros campos conforme necessário
     }
