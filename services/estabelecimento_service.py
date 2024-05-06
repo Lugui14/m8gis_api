@@ -1,9 +1,9 @@
 from typing import List, Dict
 from .default_service import DefaultService
 from repositories.estabelecimento_repository import EstabelecimentoRepository
-from services.empresa_service import EmpresaService
+# from services.empresa_service import EmpresaService
 
-empresa_service = EmpresaService()
+# empresa_service = EmpresaService()
 
 
 class EstabelecimentoService(DefaultService):
@@ -19,13 +19,13 @@ class EstabelecimentoService(DefaultService):
       'cnae': estabelecimento.empresa.cnae_principal_id,
     }
 
-    empresas_relacionadas = empresa_service.get_filtered(filters)
-    for empresa in empresas_relacionadas:
-      if empresa.get('id') == estabelecimento.empresa.id:
-        empresas_relacionadas.remove(empresa)
+    estabelecimentos_relacionados = self.repository.get_filtered(filters)
+    for empresa in estabelecimentos_relacionados:
+      if empresa.id == estabelecimento.empresa.id:
+        estabelecimentos_relacionados.remove(empresa)
 
     # Serializar o estabelecimento incluindo os detalhes da empresa relacionada
-    return self._serialize(estabelecimento, empresas_relacionadas, include_empresa=True, include_socios=True, include_address=True, include_relacionadas=True)
+    return self._serialize(estabelecimento, estabelecimentos_relacionados, include_empresa=True, include_socios=True, include_address=True, include_relacionadas=True)
 
 
 
@@ -45,16 +45,31 @@ class EstabelecimentoService(DefaultService):
     estabelecimentos = self.repository.get_filtered(filters)
     return [self._serialize_simple(estabelecimento) for estabelecimento in estabelecimentos]
   
-  def _serialize_empresa(self,empresa_relacionada):
-    return {
-        'id': empresa_relacionada.get('id'),
-        'cnpj_basico': empresa_relacionada.get('cnpj_basico'),
-        'porte': empresa_relacionada.get('porte'),
-        'razao_social': empresa_relacionada.get('razao_social'),
-        'natureza_juridica_id': empresa_relacionada.get('natureza_juridica_id'),
-        'capital_social': empresa_relacionada.get('capital_social'),
-        'cnae_principal_id': empresa_relacionada.get('cnae_principal_id'),
-    }
+  def _serialize_empresa(self,estabelecimento_relacionado, include_address:bool=False):
+    
+      serialized_data = {
+        'id': estabelecimento_relacionado.empresa_id,
+        'cnpj_basico': estabelecimento_relacionado.cnpj_basico,
+        'porte': estabelecimento_relacionado.empresa.porte,
+        'razao_social': estabelecimento_relacionado.empresa.razao_social,
+        'natureza_juridica_id': estabelecimento_relacionado.empresa.natureza_juridica_id,
+        'capital_social': estabelecimento_relacionado.empresa.capital_social,
+        'cnae_principal_id': estabelecimento_relacionado.empresa.cnae_principal_id,
+        # 'endereco':estabelcimento_relacionado.endereco if estabelcimento_relacionado.endereco else None,
+        
+      }
+      if include_address and estabelecimento_relacionado.endereco:
+          serialized_data['endereco'] = {
+          'logradouro': estabelecimento_relacionado.endereco.logradouro,
+          'numero': estabelecimento_relacionado.endereco.numero,
+          'bairro': estabelecimento_relacionado.endereco.bairro,
+          'cidade':estabelecimento_relacionado.endereco.municipio.descricao if estabelecimento_relacionado.endereco.municipio else '',
+          'cep':estabelecimento_relacionado.endereco.cep,
+          'municipio': estabelecimento_relacionado.endereco.municipio.descricao if estabelecimento_relacionado.endereco.municipio else ''
+          # ... outros campos do endereço
+        }
+        
+      return serialized_data
   
   def _serialize_socio(self,socio_empresa):
     return {
@@ -66,7 +81,7 @@ class EstabelecimentoService(DefaultService):
         # ... outros campos do sócio
     }
 
-  def _serialize(self, estabelecimento, empresas_relacionadas, include_address:bool=False, include_empresa: bool = False, include_socios:bool = False, include_relacionadas:bool = False) -> Dict:
+  def _serialize(self, estabelecimento, estabelecimentos_relacionados, include_address:bool=False, include_empresa: bool = False, include_socios:bool = False, include_relacionadas:bool = False) -> Dict:
     # Esta função assume que sua entidade `Estabelecimento` é um modelo SQLAlchemy
     # e converte para um dicionário. Você pode precisar ajustar isso
     # para se adequar à estrutura exata de sua entidade `Estabelecimento`.
@@ -98,8 +113,8 @@ class EstabelecimentoService(DefaultService):
             ]
 
         if include_relacionadas:
-          empresa_data['empresas_relacionadas'] = [
-              self._serialize_empresa(empresa) for empresa in empresas_relacionadas[:5]
+          empresa_data['estabs_relacionados'] = [
+              self._serialize_empresa(estabs,include_address=True) for estabs in estabelecimentos_relacionados[:5]
           ]
 
     serialized_data['empresa'] = empresa_data
