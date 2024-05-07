@@ -24,6 +24,7 @@ class Uf(db.Model):
     __tablename__ = 'uf'
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.Text, nullable=False)
+    qtd_estabelecimentos = db.Column(db.Integer, nullable=True)
     pais_id = db.Column(db.Integer, db.ForeignKey('pais.id'), nullable=False)
 
 Uf.municipios = db.relationship('Municipio', order_by=Municipio.id, back_populates="uf")
