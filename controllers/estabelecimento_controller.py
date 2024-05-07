@@ -3,31 +3,17 @@ from services.estabelecimento_service import EstabelecimentoService
 
 estabelecimento_blueprint = Blueprint('estabelecimento', __name__, url_prefix='/estabelecimento')
 service=EstabelecimentoService()
-# exemplo de query: http://localhost:8000/estabelecimento/estabelecimentos?porte=3&situacao=2
-@estabelecimento_blueprint.route('/estabelecimentos', methods=['GET'])
+@estabelecimento_blueprint.route('/estabelecimentos', methods=['POST'])
 def get_estabelecimentos():
-    filters = {k: request.args.get(k) for k in
-               ['id',
-                'cnae',
-                'cnae_id', 
-                'porte', 
-                'razao_social',
-                'capital_social_min', 
-                'natju',
-                'logradouro',
-                'numero',
-                'cidade',
-                'situacao',
-                'matriz',
-                'data_abertura',
-                'cnpj']}
-    filters = {k: v for k, v in filters.items() if v is not None}
+    filters = request.get_json()
+
+    print(filters)
 
     if filters:
         estabelecimentos = service.get_filtered(filters)
         return jsonify(estabelecimentos)
     else:
-        page = request.args.get('page', 1, type=int)
+        page = request.args.get('page', 0, type=int)
         return jsonify(service.get_all(page))
 
 @estabelecimento_blueprint.route('/<int:id>', methods=['GET'])

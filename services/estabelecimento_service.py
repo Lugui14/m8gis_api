@@ -141,5 +141,7 @@ class EstabelecimentoService(DefaultService):
         'razao_social': estabelecimento.empresa.razao_social if estabelecimento.empresa else None,
         'cidade': estabelecimento.endereco.municipio.descricao if estabelecimento.endereco and estabelecimento.endereco.municipio else None,
         'situacao_cadastral': estabelecimento.situacao_cadastral,
-        'porte': estabelecimento.empresa.porte if estabelecimento.empresa else None
+        'porte': estabelecimento.empresa.porte if estabelecimento.empresa else None,
+        'latitude': estabelecimento.endereco.latitude if estabelecimento.endereco else None,
+        'longitude': estabelecimento.endereco.longitude if estabelecimento.endereco else None,
     }
