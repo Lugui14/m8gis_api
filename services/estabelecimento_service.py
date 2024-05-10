@@ -1,8 +1,7 @@
 from typing import List, Dict
 from .default_service import DefaultService
 from repositories.estabelecimento_repository import EstabelecimentoRepository
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
@@ -10,39 +9,44 @@ from openpyxl.styles import Font, Alignment
 
 def criar_pdf(nome_arquivo, estabelecimentos):
 
-  c = canvas.Canvas(nome_arquivo, pagesize=letter)
-  c.setTitle("Estabelecimentos")
-  c.setFont("Helvetica", 20)
+  pdf = FPDF()
+  #pdf.set_auto_page_break(auto=True, margin=15)
+  pdf.set_margins(20, 20, 20)
 
-  altura_maxima = 730
+  pdf.add_page()
+  pdf.set_font("Helvetica", "B", size=16)
 
-  x, y = 50, altura_maxima
+  pdf.cell(0, 10, "Estabelecimentos", ln=1, align='C')
+  pdf.ln(7)
 
-  c.drawString(180, y, "Estabelecimentos encontrados")
-  y-= 70
+  pdf.set_font("Helvetica", size=11)
 
-  c.setFont("Helvetica", 11)
+  estabelecimentos_na_pagina = 0
 
   for estabelecimento in estabelecimentos:
-    altura_necessaria = 70
-
-    if y < altura_necessaria:
-      c.showPage()
-      c.setFont("Helvetica", 11)
-      y = altura_maxima
+    estabelecimentos_na_pagina += 1
 
     if (estabelecimento.nome_fantasia):
-      c.drawString(x, y, f"Nome Fantasia: {estabelecimento.nome_fantasia}")
-    else:
-      c.drawString(x, y, f"Razão Social: {estabelecimento.empresa.razao_social}")
-    y -= 20
-    c.drawString(x, y, f"CNAE: {estabelecimento.empresa.cnae.id}")
-    y -= 20
-    c.drawString(x, y, f"Cidade: {estabelecimento.endereco.municipio.descricao}")
-    y -= 30
+      pdf.cell(0, 10, f"Nome Fantasia: {estabelecimento.nome_fantasia}", ln=1)
+
+    pdf.cell(0, 10, f"Razão Social: {estabelecimento.empresa.razao_social}", ln=1)
+    pdf.cell(0, 10, f"CNPJ Básico: {estabelecimento.cnpj_basico}", ln=1)
+    pdf.multi_cell(0, 10, f"CNAE: {estabelecimento.empresa.cnae.id} - {estabelecimento.empresa.cnae.descricao}", align='J')
+    pdf.cell(0, 10, f"Situação Cadastral: {estabelecimento.situacao_cadastral}", ln=1)
+    pdf.cell(0, 10, f"Porte: {estabelecimento.empresa.porte}", ln=1)
+    pdf.cell(0, 10, f"Natureza Jurídica: {estabelecimento.empresa.natureza_juridica.descricao}", ln=1)
+    pdf.cell(0, 10, f"Rua: {estabelecimento.endereco.logradouro}", ln=1)
+    pdf.cell(0, 10, f"Número: {estabelecimento.endereco.numero}", ln=1)
+    pdf.cell(0, 10, f"Bairro: {estabelecimento.endereco.bairro}", ln=1)
+    pdf.cell(0, 10, f"CEP: {estabelecimento.endereco.cep}", ln=1)
+    pdf.cell(0, 10, f"Cidade: {estabelecimento.endereco.municipio.descricao}", ln=1)
+    pdf.ln(7)
+
+    if estabelecimentos_na_pagina % 2 == 0:
+      pdf.add_page()
 
 
-  c.save()
+  pdf.output(nome_arquivo)
 
   print(f"PDF '{nome_arquivo}' criado com sucesso.")
 
@@ -52,14 +56,36 @@ def criar_xlsx(nome_arquivo, estabelecimentos):
   wb = Workbook()
   sheet = wb.active
 
-  sheet.append(["Nome Fantasia", "Razão Social", "CNAE", "Cidade"])
+  sheet.append([
+    "Nome Fantasia",
+    "Razão Social",
+    "CNPJ Básico",
+    "CNAE",
+    "Descrição",
+    "Situação Cadastral",
+    "Porte",
+    "Natureza Jurídica",
+    "Endereço",
+    "Cidade"
+  ])
 
   for cell in sheet[1]:
     cell.font = Font(name='Arial', size=12, bold=True)
     cell.alignment = Alignment(horizontal='center', vertical='center')
 
   for estabelecimento in estabelecimentos:
-    sheet.append([estabelecimento.nome_fantasia, estabelecimento.empresa.razao_social, estabelecimento.empresa.cnae.id, estabelecimento.endereco.municipio.descricao])
+    sheet.append([
+      estabelecimento.nome_fantasia,
+      estabelecimento.empresa.razao_social,
+      estabelecimento.cnpj_basico,
+      estabelecimento.empresa.cnae.id,
+      estabelecimento.empresa.cnae.descricao,
+      estabelecimento.situacao_cadastral,
+      estabelecimento.empresa.porte,
+      estabelecimento.empresa.natureza_juridica.descricao,
+      f"RUA {estabelecimento.endereco.logradouro}, {estabelecimento.endereco.numero}, {estabelecimento.endereco.bairro}, CEP {estabelecimento.endereco.cep}",
+      estabelecimento.endereco.municipio.descricao
+    ])
 
   for row in sheet.iter_rows(min_row=2, max_row=len(estabelecimentos) + 1):
     for cell in row:
