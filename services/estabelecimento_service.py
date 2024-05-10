@@ -1,9 +1,86 @@
 from typing import List, Dict
 from .default_service import DefaultService
 from repositories.estabelecimento_repository import EstabelecimentoRepository
-# from services.empresa_service import EmpresaService
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
-# empresa_service = EmpresaService()
+
+
+def criar_pdf(nome_arquivo, estabelecimentos):
+
+  c = canvas.Canvas(nome_arquivo, pagesize=letter)
+  c.setTitle("Estabelecimentos")
+  c.setFont("Helvetica", 20)
+
+  altura_maxima = 730
+
+  x, y = 50, altura_maxima
+
+  c.drawString(180, y, "Estabelecimentos encontrados")
+  y-= 70
+
+  c.setFont("Helvetica", 11)
+
+  for estabelecimento in estabelecimentos:
+    altura_necessaria = 70
+
+    if y < altura_necessaria:
+      c.showPage()
+      c.setFont("Helvetica", 11)
+      y = altura_maxima
+
+    if (estabelecimento.nome_fantasia):
+      c.drawString(x, y, f"Nome Fantasia: {estabelecimento.nome_fantasia}")
+    else:
+      c.drawString(x, y, f"Razão Social: {estabelecimento.empresa.razao_social}")
+    y -= 20
+    c.drawString(x, y, f"CNAE: {estabelecimento.empresa.cnae.id}")
+    y -= 20
+    c.drawString(x, y, f"Cidade: {estabelecimento.endereco.municipio.descricao}")
+    y -= 30
+
+
+  c.save()
+
+  print(f"PDF '{nome_arquivo}' criado com sucesso.")
+
+
+def criar_xlsx(nome_arquivo, estabelecimentos):
+
+  wb = Workbook()
+  sheet = wb.active
+
+  sheet.append(["Nome Fantasia", "Razão Social", "CNAE", "Cidade"])
+
+  for cell in sheet[1]:
+    cell.font = Font(name='Arial', size=12, bold=True)
+    cell.alignment = Alignment(horizontal='center', vertical='center')
+
+  for estabelecimento in estabelecimentos:
+    sheet.append([estabelecimento.nome_fantasia, estabelecimento.empresa.razao_social, estabelecimento.empresa.cnae.id, estabelecimento.endereco.municipio.descricao])
+
+  for row in sheet.iter_rows(min_row=2, max_row=len(estabelecimentos) + 1):
+    for cell in row:
+      cell.font = Font(name='Arial', size=11)
+      cell.alignment = Alignment(horizontal='left', vertical='center')
+
+  for col in sheet.columns:
+    max_length = 0
+    column = col[0].column_letter
+    for cell in col:
+      try:
+        if len(str(cell.value)) > max_length:
+          max_length = len(cell.value) + 10
+      except:
+        pass
+    adjusted_width = (max_length + 2) * 1.2
+    sheet.column_dimensions[column].width = adjusted_width
+
+  wb.save(nome_arquivo)
+
+  print(f"XLSX '{nome_arquivo}' criado com sucesso.")
 
 
 class EstabelecimentoService(DefaultService):
@@ -43,6 +120,10 @@ class EstabelecimentoService(DefaultService):
   
   def get_filtered(self, filters: Dict) -> List[Dict]:
     estabelecimentos = self.repository.get_filtered(filters)
+
+    criar_pdf("./download/estabelecimentos.pdf", estabelecimentos)
+    criar_xlsx("./download/estabelecimentos.xlsx", estabelecimentos)
+
     return [self._serialize_simple(estabelecimento) for estabelecimento in estabelecimentos]
   
   def _serialize_empresa(self,estabelecimento_relacionado, include_address:bool=False):

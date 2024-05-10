@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from services.estabelecimento_service import EstabelecimentoService
+import os
 
 estabelecimento_blueprint = Blueprint('estabelecimento', __name__, url_prefix='/estabelecimento')
 service=EstabelecimentoService()
@@ -15,6 +16,14 @@ def get_estabelecimentos():
     else:
         page = request.args.get('page', 0, type=int)
         return jsonify(service.get_all(page))
+
+@estabelecimento_blueprint.route('/<filename>/download')
+def download_file(filename):
+    file_path = os.path.join('./download', filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        return 'Arquivo não encontrado', 404
 
 @estabelecimento_blueprint.route('/<int:id>', methods=['GET'])
 def get_estab_details(id):
