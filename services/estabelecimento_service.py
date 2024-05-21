@@ -5,6 +5,34 @@ from fpdf import FPDF
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
+def get_situacao(situacao_cadastral):
+
+  match situacao_cadastral:
+    case 1:
+      situacao = "Nula"
+    case 2:
+      situacao = "Ativa"
+    case 3:
+      situacao = "Suspensa"
+    case 4:
+      situacao = "Inapta"
+    case 8:
+      situacao = "Baixada"
+
+  return situacao
+
+def get_porte(porte_empresa):
+  match porte_empresa:
+    case 1:
+      porte = "Não informado"
+    case 2:
+      porte = "Micro empresa"
+    case 3:
+      porte = "Empresa de pequeno porte"
+    case 5:
+      porte = "Demais"
+  
+  return porte
 
 
 def criar_pdf(nome_arquivo, estabelecimentos):
@@ -32,8 +60,14 @@ def criar_pdf(nome_arquivo, estabelecimentos):
     pdf.cell(0, 10, f"Razão Social: {estabelecimento.empresa.razao_social}", ln=1)
     pdf.cell(0, 10, f"CNPJ Básico: {estabelecimento.cnpj_basico}", ln=1)
     pdf.multi_cell(0, 10, f"CNAE: {estabelecimento.empresa.cnae.id} - {estabelecimento.empresa.cnae.descricao}", align='J')
-    pdf.cell(0, 10, f"Situação Cadastral: {estabelecimento.situacao_cadastral}", ln=1)
-    pdf.cell(0, 10, f"Porte: {estabelecimento.empresa.porte}", ln=1)
+
+    situacao = get_situacao(estabelecimento.situacao_cadastral)
+
+    pdf.cell(0, 10, f"Situação Cadastral: {estabelecimento.situacao_cadastral} - {situacao}", ln=1)
+
+    porte = get_porte(estabelecimento.empresa.porte)
+
+    pdf.cell(0, 10, f"Porte: {estabelecimento.empresa.porte} - {porte}", ln=1)
     pdf.cell(0, 10, f"Natureza Jurídica: {estabelecimento.empresa.natureza_juridica.descricao}", ln=1)
     pdf.cell(0, 10, f"Rua: {estabelecimento.endereco.logradouro}", ln=1)
     pdf.cell(0, 10, f"Número: {estabelecimento.endereco.numero}", ln=1)
@@ -74,14 +108,16 @@ def criar_xlsx(nome_arquivo, estabelecimentos):
     cell.alignment = Alignment(horizontal='center', vertical='center')
 
   for estabelecimento in estabelecimentos:
+    situacao = get_situacao(estabelecimento.situacao_cadastral)
+    porte = get_porte(estabelecimento.empresa.porte)
     sheet.append([
       estabelecimento.nome_fantasia,
       estabelecimento.empresa.razao_social,
       estabelecimento.cnpj_basico,
       estabelecimento.empresa.cnae.id,
       estabelecimento.empresa.cnae.descricao,
-      estabelecimento.situacao_cadastral,
-      estabelecimento.empresa.porte,
+      f"{estabelecimento.situacao_cadastral} - {situacao}",
+      f"{estabelecimento.empresa.porte} - {porte}",
       estabelecimento.empresa.natureza_juridica.descricao,
       f"RUA {estabelecimento.endereco.logradouro}, {estabelecimento.endereco.numero}, {estabelecimento.endereco.bairro}, CEP {estabelecimento.endereco.cep}",
       estabelecimento.endereco.municipio.descricao
