@@ -48,6 +48,39 @@ class EstabelecimentoRepository(DefaultRepository):
 
     return query.limit(50).all()
   
+  
+  def get_filtered_estab(self, filters):
+    query = Estabelecimento.query.join(Endereco).join(Municipio).join(Empresa)
+    if 'id' in filters:
+      query = query.filter(Estabelecimento.id == filters['id'])
+    if 'cnae' in filters:
+      query = query.join(Cnae).filter(Cnae.id == filters['cnae'])
+    if 'situacao' in filters:
+      query = query.filter(Estabelecimento.situacao_cadastral == filters['situacao'])
+    if 'matriz' in filters:
+      query = query.filter(Estabelecimento.identificador_matriz_filial == filters['matriz'])
+    if 'natju' in filters:
+      query = query.join(NaturezaJuridica).filter(NaturezaJuridica.id == filters['natju'])
+    if 'porte' in filters:
+      query = query.filter(Empresa.porte == filters['porte'])
+    if 'capital_social_min' in filters:
+      query = query.filter(Empresa.capital_social >= filters['capital_social_min'])
+    if 'data_abertura' in filters:
+      query = query.filter(Estabelecimento.data_inicio_atividade >= filters['data_abertura'])
+    if 'cnpj' in filters:
+      query = query.filter(Empresa.cnpj_basico == filters['cnpj'])
+    if 'razao_social' in filters:
+      query = query.filter(Empresa.razao_social == filters['razao_social'])
+    if 'numero' in filters:
+      query = query.filter(Endereco.numero == filters['numero'])
+    if 'logradouro' in filters:
+      query = query.filter(Endereco.logradouro == filters['logradouro'].upper())
+    if 'cidade' in filters:
+      query = query.filter(Municipio.descricao == filters['cidade'].upper()).options(joinedload(Estabelecimento.endereco))
+
+    print(query.count())
+
+    return query.all()
   def get_estab_by_id_with_empresa(id):
       estabelecimento = Estabelecimento.query \
             .join(Estabelecimento.empresa) \
