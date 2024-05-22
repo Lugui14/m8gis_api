@@ -3,7 +3,7 @@ from extensions import db
 class Empresa(db.Model):
     __tablename__ = 'empresa'
     id = db.Column(db.Integer, primary_key=True)
-    cnpj_basico = db.Column(db.String(8), nullable=False)
+    cnpj_basico = db.Column(db.String(8), nullable=False, unique=True)
     porte = db.Column(db.Integer, nullable=False)
     razao_social = db.Column(db.String(250), nullable=False)
     capital_social = db.Column(db.Numeric, nullable=False)

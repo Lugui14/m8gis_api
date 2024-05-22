@@ -3,13 +3,15 @@ from extensions import db
 class Endereco(db.Model):
     __tablename__ = 'endereco'
     id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.String(20), nullable=False)
-    logradouro = db.Column(db.String(150), nullable=False)
+    numero = db.Column(db.String(20), nullable=False, default='')
+    logradouro = db.Column(db.String(150), nullable=False, default='')
     cep = db.Column(db.BigInteger, nullable=False)
-    bairro = db.Column(db.String(50), nullable=True)
-    tipo_logradouro = db.Column(db.String(50))
+    bairro = db.Column(db.String(50), nullable=True, default='')
+    tipo_logradouro = db.Column(db.String(50), nullable=False, default='')
+    complemento = db.Column(db.String(160), nullable=False, default='')
     latitude = db.Column(db.Numeric, nullable=True)
     longitude = db.Column(db.Numeric, nullable=True)
+    __table_args__ = (db.UniqueConstraint('logradouro', 'numero', 'bairro', 'tipo_logradouro', 'cep', 'municipio_id', 'complemento'),)
     municipio_id = db.Column(db.Integer, db.ForeignKey('municipio.id'), nullable=False)
 
 class Municipio(db.Model):

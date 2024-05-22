@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_cors import CORS
 from blueprints import register_blueprints
@@ -13,7 +14,7 @@ def create_app():
     app.secret_key = config.SECRET
     app.config.from_object(config)
     app.config.from_pyfile('config.py')
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/m8gis"
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     config.APP = app
@@ -30,6 +31,7 @@ def create_app():
     from entities.natureza_juridica import NaturezaJuridica
     from entities.endereco import Endereco, Municipio, Pais, Uf
     from entities.estabelecimento import Estabelecimento 
+    from entities.motivo_situacao import MotivoSituacao
 
     app = register_blueprints(app)
     return app
