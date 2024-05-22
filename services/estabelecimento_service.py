@@ -1,9 +1,148 @@
 from typing import List, Dict
 from .default_service import DefaultService
 from repositories.estabelecimento_repository import EstabelecimentoRepository
-# from services.empresa_service import EmpresaService
+from fpdf import FPDF
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
-# empresa_service = EmpresaService()
+def get_situacao(situacao_cadastral):
+
+  match situacao_cadastral:
+    case 1:
+      situacao = "Nula"
+    case 2:
+      situacao = "Ativa"
+    case 3:
+      situacao = "Suspensa"
+    case 4:
+      situacao = "Inapta"
+    case 8:
+      situacao = "Baixada"
+
+  return situacao
+
+def get_porte(porte_empresa):
+  match porte_empresa:
+    case 1:
+      porte = "Não informado"
+    case 2:
+      porte = "Micro empresa"
+    case 3:
+      porte = "Empresa de pequeno porte"
+    case 5:
+      porte = "Demais"
+  
+  return porte
+
+
+def criar_pdf(nome_arquivo, estabelecimentos):
+
+  pdf = FPDF()
+  #pdf.set_auto_page_break(auto=True, margin=15)
+  pdf.set_margins(20, 20, 20)
+
+  pdf.add_page()
+  pdf.set_font("Helvetica", "B", size=16)
+
+  pdf.cell(0, 10, "Estabelecimentos", ln=1, align='C')
+  pdf.ln(7)
+
+  pdf.set_font("Helvetica", size=11)
+
+  estabelecimentos_na_pagina = 0
+
+  for estabelecimento in estabelecimentos:
+    estabelecimentos_na_pagina += 1
+
+    if (estabelecimento.nome_fantasia):
+      pdf.cell(0, 10, f"Nome Fantasia: {estabelecimento.nome_fantasia}", ln=1)
+
+    pdf.cell(0, 10, f"Razão Social: {estabelecimento.empresa.razao_social}", ln=1)
+    pdf.cell(0, 10, f"CNPJ Básico: {estabelecimento.cnpj_basico}", ln=1)
+    pdf.multi_cell(0, 10, f"CNAE: {estabelecimento.empresa.cnae.id} - {estabelecimento.empresa.cnae.descricao}", align='J')
+
+    situacao = get_situacao(estabelecimento.situacao_cadastral)
+
+    pdf.cell(0, 10, f"Situação Cadastral: {estabelecimento.situacao_cadastral} - {situacao}", ln=1)
+
+    porte = get_porte(estabelecimento.empresa.porte)
+
+    pdf.cell(0, 10, f"Porte: {estabelecimento.empresa.porte} - {porte}", ln=1)
+    pdf.cell(0, 10, f"Natureza Jurídica: {estabelecimento.empresa.natureza_juridica.descricao}", ln=1)
+    pdf.cell(0, 10, f"Rua: {estabelecimento.endereco.logradouro}", ln=1)
+    pdf.cell(0, 10, f"Número: {estabelecimento.endereco.numero}", ln=1)
+    pdf.cell(0, 10, f"Bairro: {estabelecimento.endereco.bairro}", ln=1)
+    pdf.cell(0, 10, f"CEP: {estabelecimento.endereco.cep}", ln=1)
+    pdf.cell(0, 10, f"Cidade: {estabelecimento.endereco.municipio.descricao}", ln=1)
+    pdf.ln(7)
+
+    if estabelecimentos_na_pagina % 2 == 0:
+      pdf.add_page()
+
+
+  pdf.output(nome_arquivo)
+
+  print(f"PDF '{nome_arquivo}' criado com sucesso.")
+
+
+def criar_xlsx(nome_arquivo, estabelecimentos):
+
+  wb = Workbook()
+  sheet = wb.active
+
+  sheet.append([
+    "Nome Fantasia",
+    "Razão Social",
+    "CNPJ Básico",
+    "CNAE",
+    "Descrição",
+    "Situação Cadastral",
+    "Porte",
+    "Natureza Jurídica",
+    "Endereço",
+    "Cidade"
+  ])
+
+  for cell in sheet[1]:
+    cell.font = Font(name='Arial', size=12, bold=True)
+    cell.alignment = Alignment(horizontal='center', vertical='center')
+
+  for estabelecimento in estabelecimentos:
+    situacao = get_situacao(estabelecimento.situacao_cadastral)
+    porte = get_porte(estabelecimento.empresa.porte)
+    sheet.append([
+      estabelecimento.nome_fantasia,
+      estabelecimento.empresa.razao_social,
+      estabelecimento.cnpj_basico,
+      estabelecimento.empresa.cnae.id,
+      estabelecimento.empresa.cnae.descricao,
+      f"{estabelecimento.situacao_cadastral} - {situacao}",
+      f"{estabelecimento.empresa.porte} - {porte}",
+      estabelecimento.empresa.natureza_juridica.descricao,
+      f"RUA {estabelecimento.endereco.logradouro}, {estabelecimento.endereco.numero}, {estabelecimento.endereco.bairro}, CEP {estabelecimento.endereco.cep}",
+      estabelecimento.endereco.municipio.descricao
+    ])
+
+  for row in sheet.iter_rows(min_row=2, max_row=len(estabelecimentos) + 1):
+    for cell in row:
+      cell.font = Font(name='Arial', size=11)
+      cell.alignment = Alignment(horizontal='left', vertical='center')
+
+  for col in sheet.columns:
+    max_length = 0
+    column = col[0].column_letter
+    for cell in col:
+      try:
+        if len(str(cell.value)) > max_length:
+          max_length = len(cell.value) + 10
+      except:
+        pass
+    adjusted_width = (max_length + 2) * 1.2
+    sheet.column_dimensions[column].width = adjusted_width
+
+  wb.save(nome_arquivo)
+
+  print(f"XLSX '{nome_arquivo}' criado com sucesso.")
 
 
 class EstabelecimentoService(DefaultService):
@@ -43,6 +182,10 @@ class EstabelecimentoService(DefaultService):
   
   def get_filtered(self, filters: Dict) -> List[Dict]:
     estabelecimentos = self.repository.get_filtered(filters)
+
+    criar_pdf("./download/estabelecimentos.pdf", estabelecimentos)
+    criar_xlsx("./download/estabelecimentos.xlsx", estabelecimentos)
+
     return [self._serialize_simple(estabelecimento) for estabelecimento in estabelecimentos]
   
   def _serialize_empresa(self,estabelecimento_relacionado, include_address:bool=False):
