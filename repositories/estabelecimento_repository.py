@@ -15,8 +15,9 @@ class EstabelecimentoRepository(DefaultRepository):
   # def get_all(self, page: int):
   #  return Estabelecimento.query.join(Endereco).add_columns(Endereco.latitude, Endereco.longitude).limit(20).offset(page * 20).all()
 
-  def get_filtered(self, filters):
+  def build_query_with_filters(self, filters):
     query = Estabelecimento.query.join(Endereco).join(Municipio).join(Empresa)
+
     if 'id' in filters.keys() and filters['id'] is not None:
       query = query.filter(Estabelecimento.id == filters['id'])
     if 'cnae' in filters.keys() and len(filters['cnae']) > 0:
@@ -42,11 +43,18 @@ class EstabelecimentoRepository(DefaultRepository):
     if 'numero' in filters.keys() and filters['numero'] is not None:
       query = query.filter(Endereco.numero == filters['numero'])
     if 'logradouro' in filters.keys() and filters['logradouro'] is not None:
-      query = query.filter(Endereco.logradouro == filters['logradouro'].upper())
+      query = query.filter(Endereco.logradouro.like("%" + filters['logradouro'].upper() + "%"))
+    if 'bairro' in filters.keys() and filters['bairro'] is not None:
+      query = query.filter(Endereco.bairro.like("%" + filters['bairro'].upper() + "%"))
     if 'cidade' in filters.keys() and filters['cidade'] is not None:
-      query = query.filter(Municipio.descricao == filters['cidade'].upper()).options(joinedload(Estabelecimento.endereco))
+      query = query.filter(Municipio.id == filters['cidade']).options(joinedload(Estabelecimento.endereco))
 
-    return query.limit(50).all()
+    return query
+
+  def get_filtered(self, filters):
+    query = self.build_query_with_filters(filters)
+
+    return { 'estabelecimentos': query.order_by(Endereco.bairro.asc()).offset(50 * filters['page']).limit(50).all(), 'total': query.count()}
   
   def get_estab_by_id_with_empresa(id):
       estabelecimento = Estabelecimento.query \
@@ -66,6 +74,7 @@ class EstabelecimentoRepository(DefaultRepository):
             .first()
         
       return estabelecimento
+ 
   def get_by_cnpj(self, cnpj: int, ):
     return self.entity.query \
                       .filter(Estabelecimento.id == cnpj) \

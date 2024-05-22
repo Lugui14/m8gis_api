@@ -122,7 +122,9 @@ class EstabelecimentoService(DefaultService):
       'cnae': estabelecimento.empresa.cnae_principal_id,
     }
 
-    estabelecimentos_relacionados = self.repository.get_filtered(filters)
+    page = self.repository.get_filtered(filters)
+
+    estabelecimentos_relacionados = page['estabelecimentos']
     for empresa in estabelecimentos_relacionados:
       if empresa.id == estabelecimento.empresa.id:
         estabelecimentos_relacionados.remove(empresa)
@@ -145,12 +147,15 @@ class EstabelecimentoService(DefaultService):
     return [self._serialize(estabelecimento) for estabelecimento in estabelecimentos]
   
   def get_filtered(self, filters: Dict) -> List[Dict]:
-    estabelecimentos = self.repository.get_filtered(filters)
+    page = self.repository.get_filtered(filters)
+
+    estabelecimentos = page['estabelecimentos']
+    total = page['total']
 
     criar_pdf("./download/estabelecimentos.pdf", estabelecimentos)
     criar_xlsx("./download/estabelecimentos.xlsx", estabelecimentos)
 
-    return [self._serialize_simple(estabelecimento) for estabelecimento in estabelecimentos]
+    return { 'estabelecimentos': [self._serialize_simple(estabelecimento) for estabelecimento in estabelecimentos], 'total': total}
   
   def _serialize_empresa(self,estabelecimento_relacionado, include_address:bool=False):
     
@@ -246,9 +251,7 @@ class EstabelecimentoService(DefaultService):
         'cnae_id': estabelecimento.empresa.cnae.id if estabelecimento.empresa and estabelecimento.empresa.cnae else None,
         'cnae':estabelecimento.empresa.cnae.descricao if estabelecimento.empresa and estabelecimento.empresa.cnae else None,
         'razao_social': estabelecimento.empresa.razao_social if estabelecimento.empresa else None,
-        'cidade': estabelecimento.endereco.municipio.descricao if estabelecimento.endereco and estabelecimento.endereco.municipio else None,
-        'situacao_cadastral': estabelecimento.situacao_cadastral,
-        'porte': estabelecimento.empresa.porte if estabelecimento.empresa else None,
+        'endereco': estabelecimento.endereco.logradouro + ' - ' + estabelecimento.endereco.numero + ', ' + estabelecimento.endereco.bairro if estabelecimento.endereco else None,
         'latitude': estabelecimento.endereco.latitude if estabelecimento.endereco else None,
         'longitude': estabelecimento.endereco.longitude if estabelecimento.endereco else None,
     }
