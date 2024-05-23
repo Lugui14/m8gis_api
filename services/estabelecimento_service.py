@@ -159,9 +159,6 @@ class EstabelecimentoService(DefaultService):
     }
 
     estabelecimentos_relacionados = self.repository.get_filtered_estab(filters)
-    page = self.repository.get_filtered(filters)
-
-    estabelecimentos_relacionados = page['estabelecimentos']
     for empresa in estabelecimentos_relacionados:
       if empresa.id == estabelecimento.empresa.id:
         estabelecimentos_relacionados.remove(empresa)
