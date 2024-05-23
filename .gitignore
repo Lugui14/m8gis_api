@@ -2,3 +2,5 @@ __pycache__
 venv
 .venv
 .env
+download/estabelecimentos.pdf
+download/estabelecimentos.xlsx

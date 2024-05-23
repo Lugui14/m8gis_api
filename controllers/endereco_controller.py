@@ -8,3 +8,7 @@ service = EnderecoService()
 def index():
   return jsonify(service.fill_lat_long())
 
+@endereco_blueprint.route('/municipios', methods=['GET'])
+def municipios():
+  return jsonify(service.get_municipios())
+
