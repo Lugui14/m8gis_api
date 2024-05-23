@@ -158,9 +158,7 @@ class EstabelecimentoService(DefaultService):
       'cnae': estabelecimento.empresa.cnae_principal_id,
     }
 
-    page = self.repository.get_filtered(filters)
-
-    estabelecimentos_relacionados = page['estabelecimentos']
+    estabelecimentos_relacionados = self.repository.get_filtered_estab(filters)
     for empresa in estabelecimentos_relacionados:
       if empresa.id == estabelecimento.empresa.id:
         estabelecimentos_relacionados.remove(empresa)
@@ -196,7 +194,9 @@ class EstabelecimentoService(DefaultService):
   def _serialize_empresa(self,estabelecimento_relacionado, include_address:bool=False):
     
       serialized_data = {
-        'id': estabelecimento_relacionado.empresa_id,
+        # 'id_estab_empresa_id':
+        'id_empresa': estabelecimento_relacionado.empresa_id,
+        'id_estabelecimento': estabelecimento_relacionado.id,
         'cnpj_basico': estabelecimento_relacionado.cnpj_basico,
         'porte': estabelecimento_relacionado.empresa.porte,
         'razao_social': estabelecimento_relacionado.empresa.razao_social,
@@ -234,7 +234,7 @@ class EstabelecimentoService(DefaultService):
     # e converte para um dicionário. Você pode precisar ajustar isso
     # para se adequar à estrutura exata de sua entidade `Estabelecimento`.
     serialized_data = {
-    	'id': estabelecimento.id,
+    	'id_estabelecimento': estabelecimento.id,
       'cnae': estabelecimento.empresa.cnae.descricao,
       'cnpj_basico': estabelecimento.cnpj_basico,
       'cnpj_ordem': estabelecimento.cnpj_ordem,
@@ -247,7 +247,7 @@ class EstabelecimentoService(DefaultService):
     }
     if include_empresa and estabelecimento.empresa:
         empresa_data = {
-            'id': estabelecimento.empresa.id,
+            'id_empresa': estabelecimento.empresa.id,
             'razao_social': estabelecimento.empresa.razao_social,
             'capital_social': str(estabelecimento.empresa.capital_social),
             'porte': estabelecimento.empresa.porte,

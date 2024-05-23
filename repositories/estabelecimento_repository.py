@@ -15,9 +15,8 @@ class EstabelecimentoRepository(DefaultRepository):
   # def get_all(self, page: int):
   #  return Estabelecimento.query.join(Endereco).add_columns(Endereco.latitude, Endereco.longitude).limit(20).offset(page * 20).all()
 
-  def build_query_with_filters(self, filters):
+  def get_filtered(self, filters):
     query = Estabelecimento.query.join(Endereco).join(Municipio).join(Empresa)
-
     if 'id' in filters.keys() and filters['id'] is not None:
       query = query.filter(Estabelecimento.id == filters['id'])
     if 'cnae' in filters.keys() and len(filters['cnae']) > 0:
@@ -43,19 +42,45 @@ class EstabelecimentoRepository(DefaultRepository):
     if 'numero' in filters.keys() and filters['numero'] is not None:
       query = query.filter(Endereco.numero == filters['numero'])
     if 'logradouro' in filters.keys() and filters['logradouro'] is not None:
-      query = query.filter(Endereco.logradouro.like("%" + filters['logradouro'].upper() + "%"))
-    if 'bairro' in filters.keys() and filters['bairro'] is not None:
-      query = query.filter(Endereco.bairro.like("%" + filters['bairro'].upper() + "%"))
+      query = query.filter(Endereco.logradouro == filters['logradouro'].upper())
     if 'cidade' in filters.keys() and filters['cidade'] is not None:
-      query = query.filter(Municipio.id == filters['cidade']).options(joinedload(Estabelecimento.endereco))
+      query = query.filter(Municipio.descricao == filters['cidade'].upper()).options(joinedload(Estabelecimento.endereco))
 
-    return query
-
-  def get_filtered(self, filters):
-    query = self.build_query_with_filters(filters)
-
-    return { 'estabelecimentos': query.order_by(Endereco.bairro.asc()).offset(50 * filters['page']).limit(50).all(), 'total': query.count()}
+    return query.limit(50).all()
   
+  
+  def get_filtered_estab(self, filters):
+    query = Estabelecimento.query.join(Endereco).join(Municipio).join(Empresa)
+    if 'id' in filters:
+      query = query.filter(Estabelecimento.id == filters['id'])
+    if 'cnae' in filters:
+      query = query.join(Cnae).filter(Cnae.id == filters['cnae'])
+    if 'situacao' in filters:
+      query = query.filter(Estabelecimento.situacao_cadastral == filters['situacao'])
+    if 'matriz' in filters:
+      query = query.filter(Estabelecimento.identificador_matriz_filial == filters['matriz'])
+    if 'natju' in filters:
+      query = query.join(NaturezaJuridica).filter(NaturezaJuridica.id == filters['natju'])
+    if 'porte' in filters:
+      query = query.filter(Empresa.porte == filters['porte'])
+    if 'capital_social_min' in filters:
+      query = query.filter(Empresa.capital_social >= filters['capital_social_min'])
+    if 'data_abertura' in filters:
+      query = query.filter(Estabelecimento.data_inicio_atividade >= filters['data_abertura'])
+    if 'cnpj' in filters:
+      query = query.filter(Empresa.cnpj_basico == filters['cnpj'])
+    if 'razao_social' in filters:
+      query = query.filter(Empresa.razao_social == filters['razao_social'])
+    if 'numero' in filters:
+      query = query.filter(Endereco.numero == filters['numero'])
+    if 'logradouro' in filters:
+      query = query.filter(Endereco.logradouro == filters['logradouro'].upper())
+    if 'cidade' in filters:
+      query = query.filter(Municipio.descricao == filters['cidade'].upper()).options(joinedload(Estabelecimento.endereco))
+
+    print(query.count())
+
+    return query.all()
   def get_estab_by_id_with_empresa(id):
       estabelecimento = Estabelecimento.query \
             .join(Estabelecimento.empresa) \
@@ -74,7 +99,6 @@ class EstabelecimentoRepository(DefaultRepository):
             .first()
         
       return estabelecimento
- 
   def get_by_cnpj(self, cnpj: int, ):
     return self.entity.query \
                       .filter(Estabelecimento.id == cnpj) \
