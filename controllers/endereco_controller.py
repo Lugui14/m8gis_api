@@ -12,3 +12,6 @@ def index():
 def municipios():
   return jsonify(service.get_municipios())
 
+@endereco_blueprint.route('/uf', methods=['GET'])
+def uf():
+  return jsonify(service.get_uf())

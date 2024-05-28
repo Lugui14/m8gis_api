@@ -11,3 +11,10 @@ class EnderecoService(DefaultService):
       entities.append(self._serialize(entity))
     
     return entities
+  
+  def get_uf(self):
+    entities = []
+    for entity in self.repository.get_uf():
+      entities.append(self._serialize(entity))
+    
+    return entities

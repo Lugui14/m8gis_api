@@ -1,4 +1,4 @@
-from entities.endereco import Endereco, Municipio
+from entities.endereco import Endereco, Municipio, Uf
 from .default_repository import DefaultRepository
 
 class EnderecoRepository(DefaultRepository):
@@ -10,3 +10,6 @@ class EnderecoRepository(DefaultRepository):
   
   def get_municipios(self):
     return Municipio.query.all()
+  
+  def get_uf(self):
+    return Uf.query.all()
